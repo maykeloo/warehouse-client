@@ -10,10 +10,7 @@ import { asResponseError } from "@/app/shared/assertions/asResponseError";
 
 type Fields = z.infer<typeof AuthUser>;
 
-export const loginUserAction = async (
-  prevState: FormState<Fields>,
-  data: FormData,
-) => {
+export const loginUserAction = async (_: FormState<Fields>, data: FormData) => {
   const formData = Object.fromEntries(data.entries());
   const parsed = AuthUser.safeParse(formData);
 
