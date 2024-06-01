@@ -17,14 +17,15 @@ import { useRef } from "react";
 import { AuthUser } from "@/app/shared/model/user";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { ApiResponse } from "@/app/shared/model/response";
 
 export const AuthForm = ({ action }: { action: any }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction] = useFormState(action, {
-    message: "",
+    message: "success",
     data: [],
-    errors: [] as { path: string; message: string }[],
-  });
+    errors: [],
+  } as ApiResponse);
 
   const form = useForm({
     resolver: zodResolver(AuthUser),
@@ -34,13 +35,17 @@ export const AuthForm = ({ action }: { action: any }) => {
     },
   });
 
+  function onSubmit() {
+    form.handleSubmit(() => formRef.current?.submit());
+  }
+
   return (
     <>
       <Form {...form}>
         <form
           ref={formRef}
           action={formAction}
-          onSubmit={form.handleSubmit(() => formRef.current?.submit())}
+          onSubmit={onSubmit}
           className="space-y-8"
         >
           <FormField

@@ -1,5 +1,7 @@
-import { TokensSchema } from "@/app/shared/model/user";
+import { User } from "@/app/shared/model/user";
 import { handleZodFieldErrors } from "@/app/shared/hooks/handle-zod-field-errors";
+import { TokensSchema } from "@/app/shared/model/auth";
+import { ApiResponse } from "@/app/shared/model/response";
 
 export class UserApiService {
   async login(email: string, password: string) {
@@ -10,7 +12,6 @@ export class UserApiService {
       },
       body: JSON.stringify({ email, password }),
     }).then((res) => res.json());
-
 
     if (response.error) {
       throw response.error;
@@ -41,18 +42,21 @@ export class UserApiService {
   }
 
   async getUserData(token: string) {
-    const response = await fetch("http://localhost:3000/api/user/data", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const response: ApiResponse<User> = await fetch(
+      "http://localhost:3000/api/user/data",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-    }).then((res) => res.json());
+    ).then((res) => res.json());
 
     if (response.error) {
       throw response.error;
     }
 
-    return response.json();
+    return response;
   }
 }

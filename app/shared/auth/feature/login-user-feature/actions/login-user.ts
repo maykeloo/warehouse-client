@@ -2,11 +2,12 @@
 
 import { FormState } from "@/app/shared/types/form";
 import { z } from "zod";
-import { AuthUser } from "@/app/shared/model/user";
+import { AuthUser, User, UserRole } from "@/app/shared/model/user";
 import { handleZodFieldErrors } from "@/app/shared/hooks/handle-zod-field-errors";
 import { UserApiService } from "@/app/shared/auth/data-access/user-api-service";
 import { cookies } from "next/headers";
-import { asResponseError } from "@/app/shared/assertions/asResponseError";
+import { asResponseError } from "@/app/shared/assertions/as-response-error";
+import { redirect } from "next/navigation";
 
 type Fields = z.infer<typeof AuthUser>;
 
@@ -23,23 +24,17 @@ export const loginUserAction = async (_: FormState<Fields>, data: FormData) => {
     };
   }
 
-  const userApiService = new UserApiService();
+  let role: UserRole | null = null;
   try {
-    const tokens = await userApiService.login(
-      parsed.data.email,
-      parsed.data.password,
-    );
+    const userApiService = new UserApiService();
+    const { email, password } = parsed.data;
+    const tokens = await userApiService.login(email, password);
 
     if (tokens.data?.accessToken) {
-      const cookieStore = cookies();
-      cookieStore.set("token", tokens.data.accessToken);
+      setCookies(tokens.data.accessToken);
+      const userData = await getUserData(tokens.data.accessToken);
+      role = userData.data.role;
     }
-
-    return {
-      message: "success",
-      errors: [],
-      data: parsed.data,
-    };
   } catch (error) {
     asResponseError(error);
     return {
@@ -47,5 +42,30 @@ export const loginUserAction = async (_: FormState<Fields>, data: FormData) => {
       errors: error.errors,
       data: null,
     };
+  } finally {
+    if (role) {
+      redirectLoggedUser(role);
+    }
   }
+};
+
+const setCookies = (accessToken: string) => {
+  const cookieStore = cookies();
+  cookieStore.set("token", accessToken);
+};
+
+const getUserData = async (accessToken: string) => {
+  const userApiService = new UserApiService();
+  return await userApiService.getUserData(accessToken);
+};
+
+const redirectLoggedUser = (role: UserRole) => {
+  const routes = {
+    ADMIN: "/admin",
+    CLIENT: "/client",
+  };
+
+  const path = routes[role];
+  console.log({ path });
+  return redirect(path);
 };

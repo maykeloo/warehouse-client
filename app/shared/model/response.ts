@@ -3,8 +3,9 @@ export type ResponseError = {
   message: string;
 };
 
-export type Response<T> = {
+export type ApiResponse<T = any> = {
   message: "success" | "error";
   errors: ResponseError[];
   data: T;
+  error?: string;
 };

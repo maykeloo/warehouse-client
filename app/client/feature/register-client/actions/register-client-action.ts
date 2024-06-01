@@ -5,7 +5,7 @@ import { FormState } from "@/app/shared/types/form";
 import { z } from "zod";
 import { AuthUser } from "@/app/shared/model/user";
 import { handleZodFieldErrors } from "@/app/shared/hooks/handle-zod-field-errors";
-import { asResponseError } from "@/app/shared/assertions/asResponseError";
+import { asResponseError } from "@/app/shared/assertions/as-response-error";
 
 type Fields = z.infer<typeof AuthUser>;
 
@@ -35,6 +35,7 @@ export const registerClientAction = async (
     };
   } catch (error) {
     asResponseError(error);
+    console.log({ error: error });
     return {
       message: "error",
       errors: error.errors,
